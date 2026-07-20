@@ -18,6 +18,8 @@ namespace Catalog.API.Controllers
         {
             _mediator = mediator;
         }
+
+        /* Get all products */
         [HttpGet("GetAllProducts")]
         public async Task<ActionResult<IList<ProductDto>>> GetAllProducts([FromQuery] CatalogSpecParams catalogSpecParams)
         {
