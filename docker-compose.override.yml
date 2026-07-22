@@ -1,20 +1,3 @@
-# New Code
-
-# services:
-#   catalog.api:
-#     environment:
-#       - ASPNETCORE_ENVIRONMENT=Development
-#       - ASPNETCORE_HTTP_PORTS=8080
-#       - ASPNETCORE_HTTPS_PORTS=8081
-#     ports:
-#       - "8080"
-#       - "8081"
-#     volumes:
-#       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-#       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-#       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-#       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
-
 services:
   catalogdb:
     container_name: catalogdb
@@ -23,7 +6,14 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+  
+  basketdb:
+    container_name: basketdb
+    restart: always
+    ports:
+      - "6379:6379"  
 
+  
   catalog:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -31,8 +21,16 @@ services:
       - "DatabaseSettings__DatabaseName=CatalogDb"
       - "DatabaseSettings__ProductCollectionName=Products"
       - "DatabaseSettings__BrandCollectionName=Brands"
-      - "DatabaseSettings__TypeCollectionName=Types"
+      - "DatabaseSettings__TypeCollectionName=Types" 
     depends_on:
-      - catalogdb
+      - catalogdb          
     ports:
-      - "8000:8080"
+      - "8000:8080"  
+  basket:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "CacheSettings__ConnectionString=basketdb:6379"      
+    depends_on:
+      - basketdb
+    ports:
+      - "8001:8080"
