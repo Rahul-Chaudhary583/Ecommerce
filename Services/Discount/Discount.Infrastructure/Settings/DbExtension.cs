@@ -1,6 +1,6 @@
-﻿using Grpc.Core.Logging;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 
@@ -12,18 +12,19 @@ namespace Discount.Infrastructure.Settings
         {
             using var scope = host.Services.CreateScope();
             var services = scope.ServiceProvider;
-            var logger = services.GetRequiredService<ILogger>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("DbMigration");
             var databaseSettings = services.GetRequiredService<IOptions<DatabaseSettings>>().Value;
 
             try
             {
-                logger.Info("Discount Db Migration Started.");
+                logger.LogInformation("Discount Db Migration Started.");
                 ApplyMigration(databaseSettings.ConnectionString);
-                logger.Info("Discount Db Migration Completed.");
+                logger.LogInformation("Discount Db Migration Completed.");
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "An eror occurred while migrating the database.");
+                logger.LogError(ex, "An eror occurred while migrating the database.");
                 throw;
             }
             return host;
@@ -31,7 +32,8 @@ namespace Discount.Infrastructure.Settings
 
         private static void ApplyMigration(string connectionString)
         {
-            var retry = 5;
+            var retry = 10;
+
             while (retry > 0)
             {
                 try
@@ -43,37 +45,42 @@ namespace Discount.Infrastructure.Settings
                     {
                         Connection = connection
                     };
+
                     cmd.CommandText = "DROP TABLE IF EXISTS Coupon";
                     cmd.ExecuteNonQuery();
 
                     cmd.CommandText = @"
-                        CREATE TABLE Coupon(
-                            Id SERIAL PRIMARY KEY,
-                            ProductName VARCHAR(500) NOT NULL,
-                            Description TEXT,
-                            Amount INT
-                        )";
+                CREATE TABLE Coupon(
+                    Id SERIAL PRIMARY KEY,
+                    ProductName VARCHAR(500) NOT NULL,
+                    Description TEXT,
+                    Amount INT
+                )";
                     cmd.ExecuteNonQuery();
 
                     cmd.CommandText = @"
-                        INSERT INTO Coupon(ProductName, Description, Amount)
-                        VALUES('Adidas Quick Force Indoor Badminton Shoes', 'Shoe Discount', 500)";
+                INSERT INTO Coupon(ProductName, Description, Amount)
+                VALUES('Adidas Quick Force Indoor Badminton Shoes', 'Shoe Discount', 500)";
                     cmd.ExecuteNonQuery();
 
                     cmd.CommandText = @"
-                        INSERT INTO Coupon(ProductName, Description, Amount)
-                        VALUES('Yonex VCORE Pro 100 A Tennis Racquet (270gm, Strung)', 'Racquet Discount', 700)";
+                INSERT INTO Coupon(ProductName, Description, Amount)
+                VALUES('Yonex VCORE Pro 100 A Tennis Racquet (270gm, Strung)', 'Racquet Discount', 700)";
                     cmd.ExecuteNonQuery();
-                    //success -> exit retry loop
+
+                    Console.WriteLine("Database migration completed.");
                     break;
                 }
-                catch
+                catch (Exception ex)
                 {
                     retry--;
+
+                    Console.WriteLine($"Database not ready. Retrying... {retry}");
+
                     if (retry == 0)
-                    {
                         throw;
-                    }
+
+                    Thread.Sleep(5000);  
                 }
             }
         }

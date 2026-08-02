@@ -53,10 +53,19 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 var app = builder.Build();
 
 //Seed Mongo db on startup 
+
 using (var scope = app.Services.CreateScope())
 {
-    var options = scope.ServiceProvider.GetRequiredService<IOptions<DatabaseSettings>>();
-    await DatabaseSeeder.SeedAsync(options);
+    try
+    {
+        var options = scope.ServiceProvider.GetRequiredService<IOptions<DatabaseSettings>>();
+        await DatabaseSeeder.SeedAsync(options);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.ToString());
+        throw;
+    }
 }
 
 // Configure the HTTP request pipeline.

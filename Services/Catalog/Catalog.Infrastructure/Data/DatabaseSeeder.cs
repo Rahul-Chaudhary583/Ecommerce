@@ -20,7 +20,7 @@ namespace Catalog.Infrastructure.Data
             var types = db.GetCollection<ProductType>(settings.TypeCollectionName);
             var products = db.GetCollection<Product>(settings.ProductCollectionName);
 
-            var SeedBasePath = Path.Combine("Data", "SeedData");
+            var SeedBasePath = Path.Combine(AppContext.BaseDirectory, "Data", "SeedData");
 
             //Seed Brands
             List<ProductBrand> brandList = new();
