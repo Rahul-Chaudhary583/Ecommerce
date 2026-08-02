@@ -6,7 +6,7 @@ namespace Basket.Application.Mappers
 {
     public static class BasketMapper
     {
-        public static ShoppingCartResponse ToResponse(this ShoppingCart shoppingCart)
+        public static ShoppingCartResponse ToShoppingCartResponse(this ShoppingCart shoppingCart)
         {
             return new ShoppingCartResponse
             {
@@ -21,7 +21,6 @@ namespace Basket.Application.Mappers
                 }).ToList()
             };
         }
-
         //Delegate Based Mapper
         public static ShoppingCartResponse ToResponseUsingDelegate(this ShoppingCart cart)
             => MapCart(cart);
@@ -39,8 +38,7 @@ namespace Basket.Application.Mappers
                     ProductName = item.ProductName
                 }).ToList()
             };
-
-        public static ShoppingCart ToEntity(this CreateShoppingCartCommand command)
+        public static ShoppingCart ToShoppingCartEntity(this CreateShoppingCartCommand command)
         {
             return new ShoppingCart
             {
