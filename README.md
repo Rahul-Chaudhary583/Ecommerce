@@ -1,9 +1,5 @@
 Ecommerce Microservices | .NET 10
 
-
-
-
-
 A hands-on e-commerce backend project exploring microservices, Clean Architecture, and containerized local development with C# and .NET 10.
 
 The solution currently contains three services—Catalog, Basket, and Discount—with separate application, core, infrastructure, and API projects. Docker Compose provides supporting databases and service-to-service connectivity.
